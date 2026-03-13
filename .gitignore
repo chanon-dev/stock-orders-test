@@ -1,0 +1,46 @@
+# ### IDEs and OS ###
+.vscode/
+.idea/
+.vs/
+*.suo
+*.user
+*.userosscache
+*.sln.doccache
+.DS_Store
+Thumbs.db
+
+# ### .NET Backend ###
+[Bb]in/
+[Oo]bj/
+out/
+appsettings.Development.json
+appsettings.Local.json
+*.db
+*.db-shm
+*.db-wal
+.templateengine/
+
+# ### Next.js Frontend ###
+frontend/node_modules/
+frontend/.next/
+frontend/out/
+frontend/build/
+frontend/.env
+frontend/.env.local
+frontend/.env.*.local
+frontend/npm-debug.log*
+frontend/yarn-debug.log*
+frontend/yarn-error.log*
+frontend/.pnpm-debug.log*
+
+# ### Docker ###
+.dockerignore
+Docker/Data/
+
+# ### General ###
+log/
+logs/
+*.log
+temp/
+tmp/
+.nrt/
