@@ -44,3 +44,4 @@ logs/
 temp/
 tmp/
 .nrt/
+backend/src/StockOrders.Api/bin\Debug
