@@ -7,6 +7,7 @@ COPY src/StockOrders.Domain/StockOrders.Domain.csproj src/StockOrders.Domain/
 COPY src/StockOrders.Application/StockOrders.Application.csproj src/StockOrders.Application/
 COPY src/StockOrders.Infrastructure/StockOrders.Infrastructure.csproj src/StockOrders.Infrastructure/
 COPY src/StockOrders.Api/StockOrders.Api.csproj src/StockOrders.Api/
+COPY tests/StockOrders.Application.Tests/StockOrders.Application.Tests.csproj tests/StockOrders.Application.Tests/
 
 # Restore
 RUN dotnet restore src/StockOrders.sln
