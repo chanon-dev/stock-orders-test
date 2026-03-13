@@ -1,30 +1,20 @@
 using MediatR;
-using Microsoft.EntityFrameworkCore;
 using StockOrders.Application.Common.Interfaces;
 
 namespace StockOrders.Application.Features.Cart.Commands.UpdateCartItem;
 
 public record UpdateCartItemCommand(Guid ProductId, int NewQuantity, string SessionId) : IRequest<bool>;
 
-public class UpdateCartItemCommandHandler : IRequestHandler<UpdateCartItemCommand, bool>
+public class UpdateCartItemCommandHandler(IUnitOfWork unitOfWork) : IRequestHandler<UpdateCartItemCommand, bool>
 {
-    private readonly IApplicationDbContext _context;
-
-    public UpdateCartItemCommandHandler(IApplicationDbContext context)
-    {
-        _context = context;
-    }
-
     public async Task<bool> Handle(UpdateCartItemCommand request, CancellationToken cancellationToken)
     {
-        var cartItem = await _context.CartItems
-            .FirstOrDefaultAsync(c => c.ProductId == request.ProductId && c.SessionId == request.SessionId, cancellationToken);
-        
+        var cartItem = await unitOfWork.CartItems.GetItemByProductAndSessionAsync(request.ProductId, request.SessionId, cancellationToken);
+
         if (cartItem == null) return false;
 
-        var stock = await _context.Stocks
-            .FirstOrDefaultAsync(s => s.ProductId == request.ProductId, cancellationToken);
-        
+        var stock = await unitOfWork.Stocks.GetByProductIdAsync(request.ProductId, cancellationToken);
+
         if (stock == null) return false;
 
         var difference = request.NewQuantity - cartItem.Quantity;
@@ -40,13 +30,13 @@ public class UpdateCartItemCommandHandler : IRequestHandler<UpdateCartItemComman
         }
 
         cartItem.Quantity = request.NewQuantity;
-        
+
         if (cartItem.Quantity <= 0)
         {
-            _context.CartItems.Remove(cartItem);
+            unitOfWork.CartItems.Remove(cartItem);
         }
 
-        await _context.SaveChangesAsync(cancellationToken);
+        await unitOfWork.SaveChangesAsync(cancellationToken);
         return true;
     }
 }

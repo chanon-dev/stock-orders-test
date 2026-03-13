@@ -1,7 +1,9 @@
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using StockOrders.Application.Features.Cart.Commands.AddToCart;
+using StockOrders.Application.Features.Cart.Commands.Checkout;
 using StockOrders.Application.Features.Cart.Commands.ClearCart;
+using StockOrders.Application.Features.Cart.Commands.RemoveCartItem;
 using StockOrders.Application.Features.Cart.Commands.UpdateCartItem;
 using StockOrders.Application.Features.Cart.Queries.GetCart;
 
@@ -41,10 +43,25 @@ public class CartController : ControllerBase
         return Ok(new { success = true });
     }
 
+    [HttpDelete("item/{cartItemId}")]
+    public async Task<IActionResult> RemoveCartItem(Guid cartItemId, [FromQuery] string sessionId)
+    {
+        var result = await _mediator.Send(new RemoveCartItemCommand(cartItemId, sessionId));
+        if (!result) return BadRequest("Item not found.");
+        return Ok(new { success = true });
+    }
+
     [HttpDelete("clear/{sessionId}")]
     public async Task<IActionResult> ClearCart(string sessionId)
     {
         await _mediator.Send(new ClearCartCommand(sessionId));
         return Ok(new { success = true });
+    }
+
+    [HttpPost("checkout/{sessionId}")]
+    public async Task<IActionResult> Checkout(string sessionId)
+    {
+        var result = await _mediator.Send(new CheckoutCommand(sessionId));
+        return Ok(result);
     }
 }

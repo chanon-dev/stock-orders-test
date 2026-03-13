@@ -7,48 +7,47 @@ namespace StockOrders.Application.Features.Cart.Commands.AddToCart;
 
 public record AddToCartCommand(Guid ProductId, int Quantity, string SessionId) : IRequest<bool>;
 
-public class AddToCartCommandHandler : IRequestHandler<AddToCartCommand, bool>
+public class AddToCartCommandHandler(IUnitOfWork unitOfWork) : IRequestHandler<AddToCartCommand, bool>
 {
-    private readonly IApplicationDbContext _context;
-
-    public AddToCartCommandHandler(IApplicationDbContext context)
-    {
-        _context = context;
-    }
-
     public async Task<bool> Handle(AddToCartCommand request, CancellationToken cancellationToken)
     {
-        // 1. Check Stock
-        var stock = await _context.Stocks
-            .FirstOrDefaultAsync(s => s.ProductId == request.ProductId, cancellationToken);
-
-        if (stock == null || stock.Quantity < request.Quantity)
+        try
         {
-            return false; // Not enough stock
-        }
+            // 1. Check Stock
+            var stock = await unitOfWork.Stocks.GetByProductIdAsync(request.ProductId, cancellationToken);
 
-        // 2. Decrement Stock
-        stock.Quantity -= request.Quantity;
-
-        // 3. Update or Add CartItem
-        var existingItem = await _context.CartItems
-            .FirstOrDefaultAsync(c => c.ProductId == request.ProductId && c.SessionId == request.SessionId, cancellationToken);
-
-        if (existingItem != null)
-        {
-            existingItem.Quantity += request.Quantity;
-        }
-        else
-        {
-            _context.CartItems.Add(new CartItem
+            if (stock == null || stock.Quantity < request.Quantity)
             {
-                ProductId = request.ProductId,
-                Quantity = request.Quantity,
-                SessionId = request.SessionId
-            });
-        }
+                return false; // Not enough stock
+            }
 
-        await _context.SaveChangesAsync(cancellationToken);
-        return true;
+            // 2. Decrement Stock (RowVersion will detect concurrent updates)
+            stock.Quantity -= request.Quantity;
+
+            // 3. Update or Add CartItem
+            var existingItem = await unitOfWork.CartItems.GetItemByProductAndSessionAsync(request.ProductId, request.SessionId, cancellationToken);
+
+            if (existingItem != null)
+            {
+                existingItem.Quantity += request.Quantity;
+            }
+            else
+            {
+                unitOfWork.CartItems.Add(new CartItem
+                {
+                    ProductId = request.ProductId,
+                    Quantity = request.Quantity,
+                    SessionId = request.SessionId
+                });
+            }
+
+            await unitOfWork.SaveChangesAsync(cancellationToken);
+            return true;
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            // Another request modified the stock simultaneously — treat as out of stock
+            return false;
+        }
     }
 }

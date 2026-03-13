@@ -1,6 +1,6 @@
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using StockOrders.Infrastructure.Persistence;
+using StockOrders.Application.Features.Products.Queries.GetProducts;
 
 namespace StockOrders.Api.Controllers;
 
@@ -8,28 +8,17 @@ namespace StockOrders.Api.Controllers;
 [Route("api/[controller]")]
 public class ProductsController : ControllerBase
 {
-    private readonly ApplicationDbContext _context;
+    private readonly IMediator _mediator;
 
-    public ProductsController(ApplicationDbContext context)
+    public ProductsController(IMediator mediator)
     {
-        _context = context;
+        _mediator = mediator;
     }
 
     [HttpGet]
     public async Task<IActionResult> GetProducts()
     {
-        var products = await _context.Products
-            .Include(p => p.Stock)
-            .Select(p => new
-            {
-                p.Id,
-                p.Name,
-                p.Price,
-                p.ImageUrl,
-                StockQuantity = p.Stock != null ? p.Stock.Quantity : 0
-            })
-            .ToListAsync();
-
-        return Ok(products);
+        var result = await _mediator.Send(new GetProductsQuery());
+        return Ok(result);
     }
 }

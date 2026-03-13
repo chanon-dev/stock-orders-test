@@ -33,6 +33,7 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
             entity.HasOne(e => e.Product)
                   .WithOne(p => p.Stock)
                   .HasForeignKey<Stock>(e => e.ProductId);
+            entity.Property(e => e.RowVersion).IsRowVersion();
         });
 
         // CartItem Configuration
