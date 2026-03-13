@@ -1,5 +1,6 @@
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using StockOrders.Application.Common;
 using StockOrders.Application.Features.Cart.Commands.AddToCart;
 using StockOrders.Application.Features.Cart.Commands.Checkout;
 using StockOrders.Application.Features.Cart.Commands.ClearCart;
@@ -10,58 +11,59 @@ using StockOrders.Application.Features.Cart.Queries.GetCart;
 namespace StockOrders.Api.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
-public class CartController : ControllerBase
+[Route("api/cart")]
+public class CartController(IMediator mediator) : ControllerBase
 {
-    private readonly IMediator _mediator;
-
-    public CartController(IMediator mediator)
-    {
-        _mediator = mediator;
-    }
-
     [HttpGet("{sessionId}")]
     public async Task<IActionResult> GetCart(string sessionId)
     {
-        var result = await _mediator.Send(new GetCartQuery(sessionId));
-        return Ok(result);
+        var result = await mediator.Send(new GetCartQuery(sessionId));
+        return result.IsSuccess ? Ok(result.Value) : MapError(result.Error);
     }
 
-    [HttpPost("add")]
-    public async Task<IActionResult> AddToCart([FromBody] AddToCartCommand command)
+    [HttpPost("{sessionId}/items")]
+    public async Task<IActionResult> AddToCart(string sessionId, [FromBody] AddToCartRequest request)
     {
-        var result = await _mediator.Send(command);
-        if (!result) return BadRequest("Unable to add item to cart (Check stock).");
-        return Ok(new { success = true });
+        var result = await mediator.Send(new AddToCartCommand(request.ProductId, request.Quantity, sessionId));
+        return result.IsSuccess ? Ok() : MapError(result.Error);
     }
 
-    [HttpPut("update")]
-    public async Task<IActionResult> UpdateCart([FromBody] UpdateCartItemCommand command)
+    [HttpPut("{sessionId}/items/{productId}")]
+    public async Task<IActionResult> UpdateCartItem(string sessionId, Guid productId, [FromBody] UpdateCartItemRequest request)
     {
-        var result = await _mediator.Send(command);
-        if (!result) return BadRequest("Unable to update cart (Check stock).");
-        return Ok(new { success = true });
+        var result = await mediator.Send(new UpdateCartItemCommand(productId, request.NewQuantity, sessionId));
+        return result.IsSuccess ? Ok() : MapError(result.Error);
     }
 
-    [HttpDelete("item/{cartItemId}")]
-    public async Task<IActionResult> RemoveCartItem(Guid cartItemId, [FromQuery] string sessionId)
+    [HttpDelete("{sessionId}/items/{cartItemId}")]
+    public async Task<IActionResult> RemoveCartItem(string sessionId, Guid cartItemId)
     {
-        var result = await _mediator.Send(new RemoveCartItemCommand(cartItemId, sessionId));
-        if (!result) return BadRequest("Item not found.");
-        return Ok(new { success = true });
+        var result = await mediator.Send(new RemoveCartItemCommand(cartItemId, sessionId));
+        return result.IsSuccess ? Ok() : MapError(result.Error);
     }
 
-    [HttpDelete("clear/{sessionId}")]
+    [HttpDelete("{sessionId}/items")]
     public async Task<IActionResult> ClearCart(string sessionId)
     {
-        await _mediator.Send(new ClearCartCommand(sessionId));
-        return Ok(new { success = true });
+        var result = await mediator.Send(new ClearCartCommand(sessionId));
+        return result.IsSuccess ? Ok() : MapError(result.Error);
     }
 
-    [HttpPost("checkout/{sessionId}")]
+    [HttpPost("{sessionId}/checkout")]
     public async Task<IActionResult> Checkout(string sessionId)
     {
-        var result = await _mediator.Send(new CheckoutCommand(sessionId));
-        return Ok(result);
+        var result = await mediator.Send(new CheckoutCommand(sessionId));
+        return result.IsSuccess ? Ok(result.Value) : MapError(result.Error);
     }
+
+    private ObjectResult MapError(Error error) => error.Type switch
+    {
+        ErrorType.NotFound => NotFound(new { error.Code, error.Description }),
+        ErrorType.Conflict => Conflict(new { error.Code, error.Description }),
+        ErrorType.Validation => BadRequest(new { error.Code, error.Description }),
+        _ => Problem(error.Description)
+    };
 }
+
+public record AddToCartRequest(Guid ProductId, int Quantity);
+public record UpdateCartItemRequest(int NewQuantity);

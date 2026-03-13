@@ -1,10 +1,9 @@
 using Microsoft.EntityFrameworkCore;
-using StockOrders.Application.Common.Interfaces;
 using StockOrders.Domain.Entities;
 
 namespace StockOrders.Infrastructure.Persistence;
 
-public class ApplicationDbContext : DbContext, IApplicationDbContext
+public class ApplicationDbContext : DbContext
 {
     public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
     {

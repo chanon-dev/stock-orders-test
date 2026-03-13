@@ -1,8 +1,9 @@
 using StockOrders.Application.Common.Interfaces;
 using StockOrders.Application.Common.Interfaces.Repositories;
-using StockOrders.Infrastructure.Persistence.Repositories;
+using StockOrders.Infrastructure.Persistence;
+using StockOrders.Infrastructure.Repositories;
 
-namespace StockOrders.Infrastructure.Persistence;
+namespace StockOrders.Infrastructure;
 
 public class UnitOfWork(ApplicationDbContext context) : IUnitOfWork
 {

@@ -1,8 +1,9 @@
 using Microsoft.EntityFrameworkCore;
 using StockOrders.Application.Common.Interfaces.Repositories;
 using StockOrders.Domain.Entities;
+using StockOrders.Infrastructure.Persistence;
 
-namespace StockOrders.Infrastructure.Persistence.Repositories;
+namespace StockOrders.Infrastructure.Repositories;
 
 public class CartRepository(ApplicationDbContext context) : ICartRepository
 {

@@ -1,30 +1,29 @@
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using StockOrders.Application.Common;
 using StockOrders.Application.Common.Interfaces;
 using StockOrders.Domain.Entities;
 
 namespace StockOrders.Application.Features.Cart.Commands.AddToCart;
 
-public record AddToCartCommand(Guid ProductId, int Quantity, string SessionId) : IRequest<bool>;
+public record AddToCartCommand(Guid ProductId, int Quantity, string SessionId) : IRequest<Result>;
 
-public class AddToCartCommandHandler(IUnitOfWork unitOfWork) : IRequestHandler<AddToCartCommand, bool>
+public class AddToCartCommandHandler(IUnitOfWork unitOfWork) : IRequestHandler<AddToCartCommand, Result>
 {
-    public async Task<bool> Handle(AddToCartCommand request, CancellationToken cancellationToken)
+    public async Task<Result> Handle(AddToCartCommand request, CancellationToken cancellationToken)
     {
         try
         {
-            // 1. Check Stock
             var stock = await unitOfWork.Stocks.GetByProductIdAsync(request.ProductId, cancellationToken);
 
-            if (stock == null || stock.Quantity < request.Quantity)
-            {
-                return false; // Not enough stock
-            }
+            if (stock == null)
+                return Error.NotFound("Stock.NotFound", $"Stock for product {request.ProductId} not found.");
 
-            // 2. Decrement Stock (RowVersion will detect concurrent updates)
+            if (stock.Quantity < request.Quantity)
+                return Error.Conflict("Stock.Insufficient", "Not enough stock available.");
+
             stock.Quantity -= request.Quantity;
 
-            // 3. Update or Add CartItem
             var existingItem = await unitOfWork.CartItems.GetItemByProductAndSessionAsync(request.ProductId, request.SessionId, cancellationToken);
 
             if (existingItem != null)
@@ -42,12 +41,11 @@ public class AddToCartCommandHandler(IUnitOfWork unitOfWork) : IRequestHandler<A
             }
 
             await unitOfWork.SaveChangesAsync(cancellationToken);
-            return true;
+            return Result.Success();
         }
         catch (DbUpdateConcurrencyException)
         {
-            // Another request modified the stock simultaneously — treat as out of stock
-            return false;
+            return Error.Conflict("Stock.ConcurrencyConflict", "Stock was modified by another request. Please try again.");
         }
     }
 }

@@ -6,19 +6,12 @@ namespace StockOrders.Api.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class ProductsController : ControllerBase
+public class ProductsController(IMediator mediator) : ControllerBase
 {
-    private readonly IMediator _mediator;
-
-    public ProductsController(IMediator mediator)
-    {
-        _mediator = mediator;
-    }
-
     [HttpGet]
     public async Task<IActionResult> GetProducts()
     {
-        var result = await _mediator.Send(new GetProductsQuery());
-        return Ok(result);
+        var result = await mediator.Send(new GetProductsQuery());
+        return result.IsSuccess ? Ok(result.Value) : Problem();
     }
 }

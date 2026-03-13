@@ -1,8 +1,9 @@
 using Microsoft.EntityFrameworkCore;
 using StockOrders.Application.Common.Interfaces.Repositories;
 using StockOrders.Domain.Entities;
+using StockOrders.Infrastructure.Persistence;
 
-namespace StockOrders.Infrastructure.Persistence.Repositories;
+namespace StockOrders.Infrastructure.Repositories;
 
 public class ProductRepository(ApplicationDbContext context) : IProductRepository
 {
@@ -12,8 +13,4 @@ public class ProductRepository(ApplicationDbContext context) : IProductRepositor
             .AsNoTracking()
             .ToListAsync(cancellationToken);
 
-    public Task<Product?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
-        => context.Products
-            .Include(p => p.Stock)
-            .FirstOrDefaultAsync(p => p.Id == id, cancellationToken);
 }

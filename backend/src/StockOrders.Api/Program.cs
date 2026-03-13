@@ -1,9 +1,6 @@
-using Microsoft.EntityFrameworkCore;
 using Scalar.AspNetCore;
 using StockOrders.Application;
 using StockOrders.Infrastructure;
-using StockOrders.Infrastructure.Persistence;
-using StockOrders.Infrastructure.Persistence.Seed;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -28,28 +25,14 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
+// Auto Migrations & Seeding (runs in all environments)
+await app.InitializeDatabaseAsync();
+
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
     app.MapScalarApiReference();
-    
-    // Auto Migrations & Seeding
-    using (var scope = app.Services.CreateScope())
-    {
-        var services = scope.ServiceProvider;
-        try
-        {
-            var context = services.GetRequiredService<ApplicationDbContext>();
-            await context.Database.MigrateAsync();
-            await DbInitializer.SeedAsync(context);
-        }
-        catch (Exception ex)
-        {
-            var logger = services.GetRequiredService<ILogger<Program>>();
-            logger.LogError(ex, "An error occurred during database migration or seeding.");
-        }
-    }
 }
 
 app.UseHttpsRedirection();

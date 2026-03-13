@@ -1,13 +1,14 @@
 using MediatR;
+using StockOrders.Application.Common;
 using StockOrders.Application.Common.Interfaces;
 
 namespace StockOrders.Application.Features.Cart.Commands.ClearCart;
 
-public record ClearCartCommand(string SessionId) : IRequest<bool>;
+public record ClearCartCommand(string SessionId) : IRequest<Result>;
 
-public class ClearCartCommandHandler(IUnitOfWork unitOfWork) : IRequestHandler<ClearCartCommand, bool>
+public class ClearCartCommandHandler(IUnitOfWork unitOfWork) : IRequestHandler<ClearCartCommand, Result>
 {
-    public async Task<bool> Handle(ClearCartCommand request, CancellationToken cancellationToken)
+    public async Task<Result> Handle(ClearCartCommand request, CancellationToken cancellationToken)
     {
         var cartItems = await unitOfWork.CartItems.GetBySessionAsync(request.SessionId, cancellationToken);
 
@@ -16,14 +17,12 @@ public class ClearCartCommandHandler(IUnitOfWork unitOfWork) : IRequestHandler<C
             var stock = await unitOfWork.Stocks.GetByProductIdAsync(item.ProductId, cancellationToken);
 
             if (stock != null)
-            {
-                stock.Quantity += item.Quantity; // Restore stock
-            }
+                stock.Quantity += item.Quantity;
         }
 
         unitOfWork.CartItems.RemoveRange(cartItems);
         await unitOfWork.SaveChangesAsync(cancellationToken);
 
-        return true;
+        return Result.Success();
     }
 }
