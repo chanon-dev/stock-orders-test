@@ -11,6 +11,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StockOrders.Infrastructure"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StockOrders.Api", "StockOrders.Api\StockOrders.Api.csproj", "{1E7DFCC8-FF72-4C2F-91D1-7681B9BE7A21}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StockOrders.Application.Tests", "..\tests\StockOrders.Application.Tests\StockOrders.Application.Tests.csproj", "{D8A6813D-9BD6-415F-96BC-0ED0284965AB}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -69,6 +71,18 @@ Global
 		{1E7DFCC8-FF72-4C2F-91D1-7681B9BE7A21}.Release|x64.Build.0 = Release|Any CPU
 		{1E7DFCC8-FF72-4C2F-91D1-7681B9BE7A21}.Release|x86.ActiveCfg = Release|Any CPU
 		{1E7DFCC8-FF72-4C2F-91D1-7681B9BE7A21}.Release|x86.Build.0 = Release|Any CPU
+		{D8A6813D-9BD6-415F-96BC-0ED0284965AB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D8A6813D-9BD6-415F-96BC-0ED0284965AB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D8A6813D-9BD6-415F-96BC-0ED0284965AB}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{D8A6813D-9BD6-415F-96BC-0ED0284965AB}.Debug|x64.Build.0 = Debug|Any CPU
+		{D8A6813D-9BD6-415F-96BC-0ED0284965AB}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{D8A6813D-9BD6-415F-96BC-0ED0284965AB}.Debug|x86.Build.0 = Debug|Any CPU
+		{D8A6813D-9BD6-415F-96BC-0ED0284965AB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D8A6813D-9BD6-415F-96BC-0ED0284965AB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D8A6813D-9BD6-415F-96BC-0ED0284965AB}.Release|x64.ActiveCfg = Release|Any CPU
+		{D8A6813D-9BD6-415F-96BC-0ED0284965AB}.Release|x64.Build.0 = Release|Any CPU
+		{D8A6813D-9BD6-415F-96BC-0ED0284965AB}.Release|x86.ActiveCfg = Release|Any CPU
+		{D8A6813D-9BD6-415F-96BC-0ED0284965AB}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

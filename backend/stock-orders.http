@@ -1,0 +1,49 @@
+@baseUrl = http://localhost:5295
+# @baseUrl = http://localhost:5001
+@sessionId = session-abc-123
+@productId = 5c6b1027-496a-4e7b-96f5-8f94bc74a564
+@cartItemId = 00000000-0000-0000-0000-000000000000
+
+### ดึงรายการสินค้าทั้งหมด
+GET {{baseUrl}}/api/products
+
+###
+
+### ดูตะกร้าของ session
+GET {{baseUrl}}/api/cart/{{sessionId}}
+
+###
+
+### เพิ่มสินค้าเข้าตะกร้า
+POST {{baseUrl}}/api/cart/{{sessionId}}/items
+Content-Type: application/json
+
+{
+  "productId": "{{productId}}",
+  "quantity": 2
+}
+
+###
+
+### อัปเดตจำนวนสินค้าในตะกร้า
+PUT {{baseUrl}}/api/cart/{{sessionId}}/items/{{productId}}
+Content-Type: application/json
+
+{
+  "newQuantity": 3
+}
+
+###
+
+### ลบสินค้ารายการเดียวออกจากตะกร้า (ใส่ cartItemId ที่ได้จาก GET /api/cart/{sessionId})
+DELETE {{baseUrl}}/api/cart/{{sessionId}}/items/{{cartItemId}}
+
+###
+
+### ล้างตะกร้าทั้งหมด
+DELETE {{baseUrl}}/api/cart/{{sessionId}}/items
+
+###
+
+### Checkout
+POST {{baseUrl}}/api/cart/{{sessionId}}/checkout
